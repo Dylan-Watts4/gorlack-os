@@ -1,28 +1,49 @@
 [org 0x7c00]
-	mov bp, 0x8000
+KERNEL_OFFSET equ 0x1000
+
+	mov [BOOT_DRIVE], d1	; BIOS sets us the boot drive in 'd1' on boot
+	mov bp, 0x9000
 	mov sp, bp
 
-	mov bx, 0x9000
-	mov dh, 2
-
-	call disk_load
-
-	mov dx, [0x9000]
-	call print_hex
-
+	mov bx, MSG_REAL_MODE
+	call print
 	call print_nl
 
-	mov dx, [0x9000 + 512]
-	call print_hex
-
-	jmp $
+	call load_kernel		; Read the kernel from disk
+	call switch_to_pm		; Disable interrupts, load GDT, etc
+	jmp $					; Never executed
 
 %include "boot-sector-print.asm"
-%include "boot-sector-print-hex.asm"
+%include "boot-sector-print_hex.asm"
 %include "boot-sector-disk.asm"
+%include "32bit-gdt.asm"
+%include "32bit-print.asm"
+%include "32bit-switch.asm"
 
-times 510 - ($0$$) db 0
+[bits 16]
+load_kernel:
+	mov bx, MSG_LOAD_KERNEL
+	call print
+	call print_nl
+
+	mov bx, KERNEL_OFFSET	; Read from disk and store in 0x1000
+	mov dh, 2
+	mov dl, [BOOT_DRIVE]
+	call disk_load
+	ret
+
+[bits 32]
+BEGIN_PM:
+	mov ebx, MSG_PROT_MODE
+	call print_string_pm
+	call KERNEL_OFFSET		; Give control to the kernel
+	jmp $					; Stay here when kernel returns control
+
+BOOT_DRIVE db 0				; Store in memory as 'dl' may get overwriten
+MSG_REAL_MODE db "Started in 16-bit Real Mode", 0
+MSG_PROT_MODE db "Landed in 32-bit Protected Mode", 0
+MSG_LOAD_KERNEL db "Loading kernel into memory", 0
+
+; Padding
+times 510 - ($-$$) db 0
 dw 0xaa55
-
-times 256 dw 0xdada
-times 256 dw 0xface

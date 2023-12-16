@@ -1,7 +1,7 @@
 [org 0x7c00]
 KERNEL_OFFSET equ 0x1000
 
-	mov [BOOT_DRIVE], d1	; BIOS sets us the boot drive in 'd1' on boot
+	mov [BOOT_DRIVE], dl	; BIOS sets us the boot drive in 'd1' on boot
 	mov bp, 0x9000
 	mov sp, bp
 

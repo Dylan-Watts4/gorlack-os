@@ -8,13 +8,13 @@ GDB = /usr/bin/gdb
 
 CFLAGS = -g
 
-os-image.bin: boot/bootsect.bin kernel.bin
+os-image.bin: boot/boot-sector.bin kernel.bin
 	cat $^ > os-image.bin
 
-kernel.bin: boot/kernel_entry.o ${OBJ}
+kernel.bin: boot/kernel-entry.o ${OBJ}
 	ld -o $@ -Ttext 0x1000 $^ --oformat binary
 
-kernel.elf: boot/kernel_entry.o ${OBJ}
+kernel.elf: boot/kernel-entry.o ${OBJ}
 	ld -o $@ -Ttext 0x1000 $^
 
 run: os-image.bin

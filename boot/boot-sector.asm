@@ -13,12 +13,12 @@ KERNEL_OFFSET equ 0x1000
 	call switch_to_pm		; Disable interrupts, load GDT, etc
 	jmp $					; Never executed
 
-%include "boot-sector-print.asm"
-%include "boot-sector-print_hex.asm"
-%include "boot-sector-disk.asm"
-%include "32bit-gdt.asm"
-%include "32bit-print.asm"
-%include "32bit-switch.asm"
+%include "boot/print.asm"
+%include "boot/print-hex.asm"
+%include "boot/disk.asm"
+%include "boot/gdt.asm"
+%include "boot/32bit-print.asm"
+%include "boot/switch-pm.asm"
 
 [bits 16]
 load_kernel:
@@ -27,7 +27,7 @@ load_kernel:
 	call print_nl
 
 	mov bx, KERNEL_OFFSET	; Read from disk and store in 0x1000
-	mov dh, 2
+	mov dh, 16				; Our future kernel will be larger
 	mov dl, [BOOT_DRIVE]
 	call disk_load
 	ret

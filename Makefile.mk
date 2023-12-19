@@ -13,10 +13,10 @@ os-image.bin: boot/boot-sector.bin kernel.bin
 	cat $^ > os-image.bin
 
 kernel.bin: boot/kernel-entry.o ${OBJ}
-	i686-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
+	${LD} -o $@ -Ttext 0x1000 $^ --oformat binary
 
 kernel.elf: boot/kernel-entry.o ${OBJ}
-	i686-elf-ld -o $@ -Ttext 0x1000 $^
+	${LD} -o $@ -Ttext 0x1000 $^
 
 run: os-image.bin
 	qemu-system-x86_64 -fda os-image.bin

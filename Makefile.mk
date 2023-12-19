@@ -7,7 +7,7 @@ CC = /home/dylan/opt/cross/bin/i686-elf-gcc
 LD = /home/dylan/opt/cross/bin/i686-elf-ld
 GDB = /home/dylan/opt/cross/bin/i686-elf-gdb
 
-CFLAGS = -g -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs -Wall -Wextra -Werror
+CFLAGS = -g -ffreestanding -Wall -Wextra -fno-exceptions -m32
 
 os-image.bin: boot/boot-sector.bin kernel.bin
 	cat $^ > os-image.bin
@@ -37,5 +37,3 @@ debug: os-image.bin kernel.elf
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
 	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o
-
-# TODO convert to 32 bit

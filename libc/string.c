@@ -15,7 +15,8 @@ void int_to_ascii(int n, char str[]) {
     reverse(str);
 }
 
-void hex_to_ascii(int n, char str[]) {
+void hex_to_ascii(uint32_t n, char str[]) {
+    if (strlen(str) != 0) return; // str must be empty
     append(str, '0');
     append(str, 'x');
     char zeros = 0;
@@ -33,6 +34,7 @@ void hex_to_ascii(int n, char str[]) {
     tmp = n & 0xF;
     if (tmp >= 0xA) append(str, tmp - 0xA + 'a');
     else append(str, tmp + '0');
+    append(str, '\0'); // null terminate
 }
 
 void reverse(char str[]) {

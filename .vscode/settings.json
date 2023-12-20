@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "screen.h": "c",
-        "mem.h": "c"
+        "mem.h": "c",
+        "kernel-config.h": "c",
+        "pci.h": "c"
     }
 }

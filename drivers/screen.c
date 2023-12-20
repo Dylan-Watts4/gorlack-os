@@ -1,12 +1,14 @@
 #include "screen.h"
+#include "../kernel/kernel.h"
 #include "../cpu/ports.h"
 #include "../libc/mem.h"
+#include "../libc/string.h"
 #include <stdint.h>
 
 /* Declaration of private functions */
 int get_cursor_offset();
 void set_cursor_offset(int offset);
-int print_char(char c, int col, int row, char attr);
+int print_char(char c, int col, int row);
 int get_offset(int col, int row);
 int get_offset_row(int offset);
 int get_offset_col(int offset);
@@ -33,7 +35,7 @@ void kprint_at(char *message, int col, int row) {
     /* Loop through message and print it */
     int i = 0;
     while (message[i] != 0) {
-        offset = print_char(message[i++], col, row, WHITE_ON_BLACK);
+        offset = print_char(message[i++], col, row);
         /* Compute row/col for next iteration */
         row = get_offset_row(offset);
         col = get_offset_col(offset);
@@ -48,9 +50,15 @@ void kprint_backspace() {
     int offset = get_cursor_offset() - 2;
     int row = get_offset_row(offset);
     int col = get_offset_col(offset);
-    print_char(0x08, col, row, WHITE_ON_BLACK);
+    print_char(0x08, col, row);
 }
 
+void kprint_hex(uint32_t n) {
+    char* hex;
+    hex_to_ascii(n, hex);
+    kprint(hex);
+    kprint("\n");
+}
 
 /**********************************************************
  * Private kernel functions                               *
@@ -65,9 +73,9 @@ void kprint_backspace() {
  * Returns the offset of the next character
  * Sets the video cursor to the returned offset
  */
-int print_char(char c, int col, int row, char attr) {
+int print_char(char c, int col, int row) {
     uint8_t *vidmem = (uint8_t*) VIDEO_ADDRESS;
-    if (!attr) attr = WHITE_ON_BLACK;
+    extern uint8_t terminal_colour;
 
     /* Error control: print a red 'E' if the coords aren't right */
     if (col >= MAX_COLS || row >= MAX_ROWS) {
@@ -85,10 +93,10 @@ int print_char(char c, int col, int row, char attr) {
         offset = get_offset(0, row+1);
     } else if (c == 0x08) {
         vidmem[offset] = ' ';
-        vidmem[offset+1] = attr;
+        vidmem[offset+1] = terminal_colour;
     } else {
         vidmem[offset] = c;
-        vidmem[offset+1] = attr;
+        vidmem[offset+1] = terminal_colour;
         offset += 2;
     }
 
@@ -140,7 +148,7 @@ void clear_screen() {
 
     for (i = 0; i < screen_size; i++) {
         screen[i*2] = ' ';
-        screen[i*2+1] = WHITE_ON_BLACK;
+        screen[i*2+1] = terminal_colour;
     }
     set_cursor_offset(get_offset(0, 0));
 }

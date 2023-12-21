@@ -16,7 +16,6 @@ void int_to_ascii(int n, char str[]) {
 }
 
 void hex_to_ascii(uint32_t n, char str[]) {
-    if (strlen(str) != 0) return; // str must be empty
     append(str, '0');
     append(str, 'x');
     char zeros = 0;

@@ -32,6 +32,25 @@ uint16_t pciConfigReadWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offs
     return tmp;
 }
 
+void pciConfigWriteWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t data) {
+    uint32_t address;
+    uint32_t lbus = (uint32_t) bus;
+    uint32_t lslot = (uint32_t) slot;
+    uint32_t lfunc = (uint32_t) func;
+
+    // Create configuration address as per above
+    address = (uint32_t)((lbus << 16) | (lslot << 11) | (lfunc << 8) | (offset & 0xFC) | ((uint32_t)0x80000000));
+
+    // Write out the address
+    uint16_t port = CONFIG_ADDRESS;
+    port_dword_out(port, address);
+
+    // Write out the data
+    port = CONFIG_DATA;
+    port_dword_out(port, data);
+
+}
+
 /*
     When a configuration access attempt to select a device that does not exists on the bus,
     the device will return all 1's on the data(read) lines. This is called a "no-device present" response.
@@ -87,8 +106,56 @@ void get_all_pci_devices() {
                     kprint_hex(device.deviceID);
                     kprint("Vendor: ");
                     kprint_hex(device.vendorID);
+                    kprint("Class: ");
+                    kprint_hex(device.class);
                 }
             }
         }
     }
+}
+
+void set_pci_command_register(uint8_t bus, uint8_t slot, uint8_t func, uint16_t command) {
+    uint16_t data = get_pci_command_register(bus, slot, func);
+    data = (data & 0xFF00) | command;
+    pciConfigWriteWord(bus, slot, func, 0x4, data);
+}
+
+uint16_t get_pci_command_register(uint8_t bus, uint8_t slot, uint8_t func) {
+    return (uint16_t) pciConfigReadWord(bus, slot, func, 0x4);
+}
+
+uint16_t command_register_to_int(struct command_register command) {
+    uint16_t data = 0;
+    data |= command.ioSpaceEnable << 0;
+    data |= command.memSpaceEnable << 1;
+    data |= command.busMasterEnable << 2;
+    data |= command.specialCycles << 3;
+    data |= command.memWriteAndInvalidateEnable << 4;
+    data |= command.vgaPaletteSnoop << 5;
+    data |= command.parityErrorResponse << 6;
+    data |= command.idselSteppingControl << 7;
+    data |= command.serrEnable << 8;
+    data |= command.fastBackToBackEnable << 9;
+    data |= command.interruptDisable << 10;
+    return data;
+}
+
+/*
+    Bit 15: Detecte Parity Error
+    Bit 14: Signaled System Error
+    Bit 13: Received Master Abort
+    Bit 12: Received Target Abort
+    Bit 11: Signaled Target Abort
+    Bit 10-9: DEVSEL Timing
+    Bit 8: Master Data Parity Error
+    Bit 7: Fast Back-to-Back Capable
+    Bit 6: Reserved
+    Bit 5: 66 MHz Capable
+    Bit 4: Capabilities List
+    Bit 3: Interrupt Status
+    Bit 2-0: Reserved
+*/
+
+uint16_t get_pci_status_register(uint8_t bus, uint8_t slot, uint8_t func) {
+    return pciConfigReadWord(bus, slot, func, 0x6);
 }

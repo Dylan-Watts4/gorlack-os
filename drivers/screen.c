@@ -54,7 +54,7 @@ void kprint_backspace() {
 }
 
 void kprint_hex(uint32_t n) {
-    char* hex;
+    char hex[10];
     hex_to_ascii(n, hex);
     kprint(hex);
     kprint("\n");

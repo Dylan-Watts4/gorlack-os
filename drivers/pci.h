@@ -42,9 +42,30 @@ struct command_register {
     uint16_t reserved:5;
 };
 
+struct status_register {
+    uint16_t reserved0:3;
+    uint16_t interruptStatus:1;
+    uint16_t capabilitiesList:1;
+    uint16_t _66MHzCapable:1;
+    uint16_t reserved1:1;
+    uint16_t fastBackToBackCapable:1;
+    uint16_t masterDataParityError:1;
+    uint16_t devselTiming:2;
+    uint16_t signaledTargetAbort:1;
+    uint16_t receivedTargetAbort:1;
+    uint16_t receivedMasterAbort:1;
+    uint16_t signaledSystemError:1;
+    uint16_t detectedParityError:1;
+};
+
 void get_all_pci_devices();
 struct pci_device get_pci_device(uint8_t bus, uint8_t slot, uint8_t func);
 void pciConfigWriteWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t data);
 uint16_t pciConfigReadWord(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset);
+void set_pci_command_register(uint8_t bus, uint8_t slot, uint8_t func, uint16_t command);
+uint16_t get_pci_command_register(uint8_t bus, uint8_t slot, uint8_t func);
+uint16_t command_register_to_int(struct command_register command);
+void set_pci_status_register(uint8_t bus, uint8_t slot, uint8_t func, uint16_t status);
+uint16_t get_pci_status_register(uint8_t bus, uint8_t slot, uint8_t func);
 
 #endif
